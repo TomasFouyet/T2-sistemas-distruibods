@@ -25,5 +25,5 @@ def start_acceptors(ids: List[str]) -> Dict[str, Acceptor]:
 def start_proposers(ids: List[str]) -> Dict[str, Proposer]:
     proposers = {}
     for p in ids:
-        proposers[p] = Proposer(prepared_majority={}, forced_value_by_n={})
+        proposers[p] = Proposer(accepted_majority={}, forced_value={})
     return proposers
