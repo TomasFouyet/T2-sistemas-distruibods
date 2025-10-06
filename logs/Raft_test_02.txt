@@ -4,6 +4,6 @@ sospechoso=Hitomi
 crimen=asesinato por romance fallido
 fallecidos=1
 BASE DE DATOS
-crimen=asesinato por romance fallido
 fallecidos=1
 sospechoso=Hitomi
+crimen=asesinato por romance fallido

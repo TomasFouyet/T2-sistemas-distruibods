@@ -1,15 +1,15 @@
 from __future__ import annotations
 from typing import Dict, List, Tuple
+from collections import OrderedDict
 import os
 
 class Database:
     
     def __init__(self):
-        self.variables: Dict[str, str] = {}
+        self.variables: OrderedDict[str, str] = OrderedDict()
         self.log_events: List[Tuple[str, str]] = []
     
     def apply_action(self, action: str) -> None:
-        """Apply a consolidated action to the database."""
         if not action:
             return
             
@@ -56,9 +56,9 @@ class Database:
         if not self.variables:
             lines.append("No hay datos")
         else:
-            # Ordenamos variables alfabeticamente para una salida consistente
-            for var_name in sorted(self.variables.keys()):
-                lines.append(f"{var_name}={self.variables[var_name]}")
+            # Mantenemos el orden de inserción/consolidación
+            for var_name, value in self.variables.items():
+                lines.append(f"{var_name}={value}")
         
         return "\n".join(lines)
     
