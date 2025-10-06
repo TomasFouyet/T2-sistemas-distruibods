@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
 
-from paxos.utils import AlgorithmResult, File, clean_lines_with_index, gano_mayoria
+from utils import AlgorithmResult, File, clean_lines_with_index, gano_mayoria
 from .essential import Nodo, start, choose_next_leader
 from .event_handler import handle_stop, handle_start, handle_send, handle_spread, handle_log
 from database import Database

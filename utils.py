@@ -1,11 +1,6 @@
 from __future__ import annotations
-from sys import argv
-import os
 from typing import List, Tuple, Dict
-import collections
-import itertools
 from dataclasses import dataclass
-import enum
 
 @dataclass
 class AlgorithmResult:

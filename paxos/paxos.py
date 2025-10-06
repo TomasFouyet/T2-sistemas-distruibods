@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 
 from dataclasses import dataclass
 
-from paxos.utils import AlgorithmResult, File, clean_lines_with_index, gano_mayoria
+from utils import AlgorithmResult, File, clean_lines_with_index, gano_mayoria
 from paxos.essential import Acceptor, Proposer, start_acceptors, start_proposers
 from paxos.event_handler import (
     handle_stop, handle_start, handle_prepare, handle_accept,

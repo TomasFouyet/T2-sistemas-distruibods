@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import List, Optional
-from paxos.utils import gano_mayoria
+from typing import List
 from .essential import Nodo, choose_next_leader, Line
 
 def _have_majority(ctx, index: int, entry: Line) -> bool:
