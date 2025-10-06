@@ -85,6 +85,8 @@ def handle_learn(ctx, global_line: int) -> None:
     if count >= ctx.majority_needed:
         ctx.actions_consolidadas.append(value)
         ctx.accepted_at.append(global_line)
+        # Aplicamos la accion consolidada a la base de datos
+        ctx.database.apply_action(value)
         # resetiamos los activos
         for st in ctx.A.values():
             if st.active:
@@ -101,3 +103,5 @@ def handle_log(ctx, parts: List[str], global_line: int) -> None:
     if len(parts) >= 2:
         var = parts[1].strip()
         ctx.logs.append((global_line, var))
+        # Logueamos el valor actual de la variable a la base de datos
+        ctx.database.log_variable(var)

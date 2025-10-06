@@ -26,15 +26,30 @@ def start(parejas: List[Tuple[str, int]]) -> Dict[str, Nodo]:
 
     return nodos
 
-# Elige como lider al nodod activo con menor time y si hay
-# empate, el de menor id
-def choose_next_leader(nodos: Dict[str, Nodo]) -> Optional[str]:
+def _last_term_index(n: Nodo) -> Tuple[int, int]:
+    if not n.log:
+        return (0, -1)
+    return (n.log[-1].term, len(n.log) - 1)
 
-    activos = []
-    for nodo in nodos.values():
-        if nodo.activo:
-            activos.append(nodo)
+
+def choose_next_leader(nodos: Dict[str, Nodo], mayoria: Optional[int] = None) -> Optional[str]:
+    activos = [n for n in nodos.values() if n.activo]
     if not activos:
         return None
-    activos.sort(key=lambda nodo: (nodo.time, nodo.id))
-    return activos[0].id
+    req = mayoria if mayoria is not None else (len(nodos) // 2) + 1
+
+    # candidatos por timeout luego id (tie-breaker)
+    candidatos = sorted(activos, key=lambda n: (n.time, n.id))
+    votantes = activos
+
+    for cand in candidatos:
+        lt_cand = _last_term_index(cand)
+        votos = 0
+        for v in votantes:
+            lt_v = _last_term_index(v)
+            if lt_cand >= lt_v:
+                votos += 1
+        if votos >= req:
+            return cand.id
+
+    return candidatos[0].id

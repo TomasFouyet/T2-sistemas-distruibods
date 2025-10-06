@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple, Optional
 from paxos.utils import AlgorithmResult, File, clean_lines_with_index, gano_mayoria
 from .essential import Nodo, start, choose_next_leader
 from .event_handler import handle_stop, handle_start, handle_send, handle_spread, handle_log
+from database import Database
 
 @dataclass
 class Raft:
@@ -17,6 +18,7 @@ class Raft:
     accepted_at: List[int]
     logs: List[Tuple[int, str]]
     committed: int  # último índice consolidado (-1 si ninguno)
+    database: Database
 
 # Esta funcion de parser el header del archivo de entrada
 # se realizo con copilot 
@@ -29,14 +31,15 @@ def _parse_header_nodes(line: str) -> List[Tuple[str, int]]:
     return pairs
 
 
-def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File]:
+def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File, Database]:
     is_event_line, cleaned = clean_lines_with_index(full_lines)
     event_global_idx = [i for i, ok in enumerate(is_event_line) if ok]
 
     if not cleaned:
         # archivo vacío después de limpiar: retorna vacío
         file = File(lines=full_lines, line_event=is_event_line, header={})
-        return AlgorithmResult(actions_accepted=[], consolidaciones=[], logs=[]), file
+        empty_db = Database()
+        return AlgorithmResult(actions_accepted=[], consolidaciones=[], logs=[]), file, empty_db
 
     # Cabecera: nodos (id, timeout)
     id_time = _parse_header_nodes(cleaned[0])
@@ -45,7 +48,8 @@ def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File]:
     mayoria = gano_mayoria(len(nodos))
 
     # Líder elegido justo antes del primer evento (enunciado)
-    leader = choose_next_leader(nodos)
+    leader = choose_next_leader(nodos, mayoria)
+
     if leader is not None:
         term = 1 
     else:
@@ -61,6 +65,7 @@ def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File]:
         accepted_at=[],
         logs=[],
         committed=-1,
+        database=Database(),
     )
 
     # Procesar eventos desde cleaned[1:]
@@ -93,4 +98,4 @@ def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File]:
         consolidaciones=ctx.accepted_at,
         logs=ctx.logs,
     )
-    return sim, file
+    return sim, file, ctx.database

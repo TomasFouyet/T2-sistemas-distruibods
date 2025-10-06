@@ -45,6 +45,8 @@ def _recompute_commit(ctx, global_line: int) -> None:
         entry = L[k]
         ctx.actions_consolidadas.append(entry.action)
         ctx.accepted_at.append(global_line)
+        # Aplicamos la accion consolidada a la base de datos
+        ctx.database.apply_action(entry.action)
     ctx.committed = m
 
 
@@ -56,9 +58,11 @@ def handle_stop(ctx, parts: List[str]) -> None:
             return
         nodo.activo = False
         if ctx.leader == nodo_id:
-            new_leader = choose_next_leader(ctx.nodos)
+            new_leader = choose_next_leader(ctx.nodos, ctx.mayoria)
             if new_leader is not None:
                 ctx.term += 1
+                # En Raft, el nuevo líder mantiene su log completo
+                # La sincronización se hace durante el Spread
             ctx.leader = new_leader
 
 def handle_start(ctx, parts: List[str]) -> None:
@@ -69,9 +73,10 @@ def handle_start(ctx, parts: List[str]) -> None:
             return
         svr.activo = True
         if ctx.leader is None:
-            new_leader = choose_next_leader(ctx.nodos)
+            new_leader = choose_next_leader(ctx.nodos, ctx.mayoria)
             if new_leader is not None:
                 ctx.term += 1
+                # En Raft, el nuevo líder mantiene su log completo
             ctx.leader = new_leader
 
 def handle_send(ctx, parts: List[str]) -> None:
@@ -98,15 +103,17 @@ def handle_spread(ctx, parts: List[str], global_line: int) -> None:
             inner = s[1:-1].strip()
             targets = [p.strip() for p in inner.split(',')] if inner else []
 
-    leader_copy = leader.log[:]
     for nodo_id in targets:
         nodo = ctx.nodos.get(nodo_id)
         if nodo and nodo.activo:
-            nodo.log = leader_copy[:]
+            nodo.log = leader.log[:]
 
     _recompute_commit(ctx, global_line)
+
 
 def handle_log(ctx, parts: List[str], global_line: int) -> None:
     if len(parts) >= 2:
         var = parts[1].strip()
         ctx.logs.append((global_line, var))
+        # Logueamos el valor actual de la variable a la base de datos
+        ctx.database.log_variable(var)

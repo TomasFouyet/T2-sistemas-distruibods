@@ -13,6 +13,7 @@ from paxos.event_handler import (
     handle_stop, handle_start, handle_prepare, handle_accept,
     handle_learn, handle_log
 )
+from database import Database
 
 @dataclass
 class Paxos:
@@ -22,6 +23,7 @@ class Paxos:
     actions_consolidadas: List[str]
     accepted_at: List[int]
     logs: List[Tuple[int, str]]
+    database: Database
 
 # generado con copilot para parsear los headers del archivo de lectura
 def _parse_headers(cleaned: List[str]) -> tuple[list[str], list[str], list[str]]:
@@ -33,7 +35,7 @@ def _parse_headers(cleaned: List[str]) -> tuple[list[str], list[str], list[str]]
 
 
 # Simula la ejecucion de Paxos con las lineas del archivo de test
-def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File]:
+def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File, Database]:
     is_event_line, cleaned = clean_lines_with_index(full_lines)
     event_global_idx = [i for i, ok in enumerate(is_event_line) if ok]
 
@@ -45,7 +47,7 @@ def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File]:
     # Contexto de la simulacion
     ctx = Paxos(
         A=Acceptors, P=Proposers, majority_needed=majority_needed,
-        actions_consolidadas=[], accepted_at=[], logs=[]
+        actions_consolidadas=[], accepted_at=[], logs=[], database=Database()
     )
 
     # Procesar eventos
@@ -81,4 +83,4 @@ def simulate(full_lines: List[str]) -> Tuple[AlgorithmResult, File]:
         consolidaciones=ctx.accepted_at,
         logs=ctx.logs,
     )
-    return simulation, file
+    return simulation, file, ctx.database
